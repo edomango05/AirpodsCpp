@@ -32,23 +32,22 @@ struct Airpods
             {
                 continue;
             };
-            std::cout << el.identifier() << std::endl;
             SimpleBLE::ByteArray data = el.manufacturer_data()[AIRPODS_MANUFACTURER];
             if (data.length() != AIRPODS_DATA_LENGTH)
             {
                 continue;
             }
-            hexData = hexStr(std::move(data));
-            std::cout << " | " << hexData << " | " << std::endl;
+            m_hexData = hexStr(std::move(data));
+            std::cout << "-| " << m_hexData << " |-" << std::endl;
             checkIfFlipped();
-            short int lBattery = std::stoul(std::string{hexData[m_is_flipped ? AIRPODS_LEFT_BATTERY : AIRPODS_RIGHT_BATTERY]}, nullptr, 16) * 10;
+            short int lBattery = std::stoul(std::string{m_hexData[m_is_flipped ? AIRPODS_LEFT_BATTERY : AIRPODS_RIGHT_BATTERY]}, nullptr, 16) * 10;
             lBattery = lBattery > 100 ? -1 : lBattery;
-            short int rBattery = std::stoul(std::string{hexData[m_is_flipped ? AIRPODS_RIGHT_BATTERY : AIRPODS_LEFT_BATTERY]}, nullptr, 16) * 10;
+            short int rBattery = std::stoul(std::string{m_hexData[m_is_flipped ? AIRPODS_RIGHT_BATTERY : AIRPODS_LEFT_BATTERY]}, nullptr, 16) * 10;
             rBattery = rBattery > 100 ? -1 : rBattery;
-            short int cBattery = std::stoul(std::string{hexData[27]}, nullptr, 16) * 10;
+            short int cBattery = std::stoul(std::string{m_hexData[27]}, nullptr, 16) * 10;
             cBattery = cBattery > 100 ? -1 : cBattery;
             std::string modelName;
-            switch (hexData[7])
+            switch (m_hexData[7])
             {
             case '3':
                 modelName = "AirPods 3th gen";
@@ -69,20 +68,20 @@ struct Airpods
                 modelName = "unknown";
                 break;
             }
-            std::cout << "Model : " << modelName << std::endl;
+            std::cout << "Model    : " << modelName << std::endl;
             std::cout << "lBattery : " << lBattery << std::endl;
             std::cout << "rBattery : " << rBattery << std::endl;
             std::cout << "cBattery : " << cBattery << std::endl;
         }
     }
-
 private:
     bool m_charging_left = false;
     bool m_charging_right = false;
     bool m_charging_case = false;
-    SimpleBLE::Adapter m_firstAdapter;
-    std::string hexData;
     bool m_is_flipped = false;
+    std::string m_hexData;
+    SimpleBLE::Adapter m_firstAdapter;
+    
 
     std::string hexStr(SimpleBLE::ByteArray &&data)
     {
@@ -96,7 +95,7 @@ private:
     }
     void checkIfFlipped()
     {
-        m_is_flipped = hexData[10] & 0x02 == 0;
+        m_is_flipped = m_hexData[10] & 0x02 == 0;
     }
     bool checkValidity()
     {
